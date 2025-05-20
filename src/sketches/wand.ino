@@ -25,10 +25,13 @@ Adafruit_MPU6050 mpu;
 
 // Sampling and capture variables
 #define SAMPLE_RATE_MS 10  // 100Hz sampling rate (10ms between samples)
-#define CAPTURE_DURATION_MS 1500  // 1 second capture
+#define CAPTURE_DURATION_MS 1500  // 1.5 second capture
 #define FEATURE_SIZE EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE  // Size of the feature array
 #define BUTTON_PIN A2
+#define LED_PIN 9  // D9 (GPIO9) for LED output
 
+// Gesture flash patterns
+#define FLASH_DELAY 200  // Base delay between flashes in ms
 
 // Capture state variables
 bool capturing = false;
@@ -56,6 +59,7 @@ int raw_feature_get_data(size_t offset, size_t length, float *out_ptr) {
 }
 
 void print_inference_result(ei_impulse_result_t result);
+void display_gesture_with_led(const char* gesture);
 
 /**
  * @brief      Arduino setup function
@@ -66,6 +70,12 @@ void setup()
     Serial.begin(115200);
     
     pinMode(BUTTON_PIN, INPUT_PULLUP);
+    pinMode(LED_PIN, OUTPUT);  // Set LED pin as output
+    
+    // Test LED during startup
+    digitalWrite(LED_PIN, HIGH);
+    delay(500);
+    digitalWrite(LED_PIN, LOW);
     
     // Initialize MPU6050
     Serial.println("Initializing MPU6050...");
@@ -82,7 +92,7 @@ void setup()
     mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
     
     Serial.println("MPU6050 initialized successfully");
-    Serial.println("Send 'o' to start gesture capture");
+    Serial.println("Press button to start gesture capture");
 }
 
 /**
@@ -150,22 +160,25 @@ void run_inference() {
  * @brief      Arduino main function
  */
 void loop() {
-    // 读取当前按钮状态
+    // Read current button state
     bool currentButtonState = digitalRead(BUTTON_PIN);
 
-    // 检测从 HIGH → LOW 的下降沿（按下瞬间）
+    // Detect falling edge (HIGH to LOW transition - button press)
     if (lastButtonState == HIGH && currentButtonState == LOW && !capturing) {
         Serial.println("Button pressed: Starting gesture capture...");
         sample_count = 0;
         capturing = true;
         capture_start_time = millis();
         last_sample_time = millis();
+        
+        // Turn on LED to indicate capturing
+        digitalWrite(LED_PIN, HIGH);
     }
 
-    // 更新按钮状态记录
+    // Update button state
     lastButtonState = currentButtonState;
 
-    // 如果处于采集模式，则持续采样
+    // If in capture mode, continue sampling
     if (capturing) {
         capture_accelerometer_data();
     }
@@ -190,5 +203,59 @@ void print_inference_result(ei_impulse_result_t result) {
         Serial.print(" (");
         Serial.print(max_value * 100);
         Serial.println("%)");
+        
+        // Display the gesture using LED
+        display_gesture_with_led(ei_classifier_inferencing_categories[max_index]);
+    }
+}
+
+/**
+ * @brief      Display the detected gesture using LED flash patterns
+ * 
+ * @param[in]  gesture   The detected gesture name
+ */
+void display_gesture_with_led(const char* gesture) {
+    // Turn off LED first
+    digitalWrite(LED_PIN, LOW);
+    delay(500);  // Pause before showing the pattern
+    
+    // Different flash patterns for different gestures
+    if (strcmp(gesture, "z") == 0 || strcmp(gesture, "Z") == 0) {
+        // Fire Bolt spell - Fast zigzag pattern (3 quick flashes)
+        for (int i = 0; i < 3; i++) {
+            digitalWrite(LED_PIN, HIGH);
+            delay(100);
+            digitalWrite(LED_PIN, LOW);
+            delay(100);
+        }
+    } 
+    else if (strcmp(gesture, "o") == 0 || strcmp(gesture, "O") == 0) {
+        // Reflect Shield spell - Slow steady pulse (2 long flashes)
+        for (int i = 0; i < 2; i++) {
+            digitalWrite(LED_PIN, HIGH);
+            delay(500);
+            digitalWrite(LED_PIN, LOW);
+            delay(300);
+        }
+    }
+    else if (strcmp(gesture, "v") == 0 || strcmp(gesture, "V") == 0) {
+        // Healing Spell - Gentle alternating pattern (1 long, 2 short)
+        digitalWrite(LED_PIN, HIGH);
+        delay(800);
+        digitalWrite(LED_PIN, LOW);
+        delay(200);
+        
+        for (int i = 0; i < 2; i++) {
+            digitalWrite(LED_PIN, HIGH);
+            delay(200);
+            digitalWrite(LED_PIN, LOW);
+            delay(200);
+        }
+    }
+    else {
+        // Unknown gesture - single long flash
+        digitalWrite(LED_PIN, HIGH);
+        delay(1000);
+        digitalWrite(LED_PIN, LOW);
     }
 }
