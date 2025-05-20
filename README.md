@@ -9,8 +9,8 @@ This project implements a gesture recognition system using an ESP32 microcontrol
 The MPU6050 sensor is connected to the ESP32 as follows:
 - VCC → 3.3V
 - GND → GND
-- SCL → GPIO22 (I2C clock pin)
-- SDA → GPIO21 (I2C data pin)
+- SCL → D5 (GPIO7) (I2C clock pin)
+- SDA → D4 (GPIO6) (I2C data pin)
 
 To ensure stable gesture recognition, I mounted the MPU6050 on a breadboard with a consistent orientation to maintain consistency between training data and actual use.
 
@@ -45,7 +45,7 @@ For each gesture, I followed these steps:
 | O | Reflect Shield | 25 |
 | V | Healing Spell | 25 |
 
-In addition, I invited 3 classmates to contribute their gesture data, which was merged into the training dataset. The final data structure was:
+In addition, I invited a classmate to contribute their gesture data, which was merged into the training dataset. The final data structure was:
 
 ```
 data/
@@ -82,7 +82,7 @@ This diversity is crucial for enhancing the model's generalization capability.
 
 ### Project Creation and Data Upload
 
-1. Created a new project in Edge Impulse named "Magic Wand Gestures"
+1. Created a new project in Edge Impulse
 2. Uploaded all collected gesture data and automatically split it into training (80%) and testing (20%) sets
 3. Verified that all data was correctly labeled with the corresponding gesture category
 
