@@ -1,4 +1,72 @@
-# TECHIN515 Lab 4 - Magic Wand Report
+The code implementation includes visual feedback through an LED that displays unique flash patterns for each recognized gesture:
+
+```cpp
+void display_gesture_with_led(const char* gesture) {
+    // Turn off LED first
+    digitalWrite(LED_PIN, LOW);
+    delay(500);  // Pause before showing the pattern
+    
+    // Different flash patterns for different gestures
+    if (strcmp(gesture, "z") == 0 || strcmp(gesture, "Z") == 0) {
+        // Fire Bolt spell - Fast zigzag pattern (3 quick flashes)
+        for (int i = 0; i < 3; i++) {
+            digitalWrite(LED_PIN, HIGH);
+            delay(100);
+            digitalWrite(LED_PIN, LOW);
+            delay(100);
+        }
+    } 
+    else if (strcmp(gesture, "o") == 0 || strcmp(gesture, "O") == 0) {
+        // Reflect Shield spell - Slow steady pulse (2 long flashes)
+        for (int i = 0; i < 2; i++) {
+            digitalWrite(LED_PIN, HIGH);
+            delay(500);
+            digitalWrite(LED_PIN, LOW);
+            delay(300);
+        }
+    }
+    else if (strcmp(gesture, "v") == 0 || strcmp(gesture, "V") == 0) {
+        // Healing Spell - Gentle alternating pattern (1 long, 2 short)
+        digitalWrite(LED_PIN, HIGH);
+        delay(800);
+        digitalWrite(LED_PIN, LOW);
+        delay(200);
+        
+        for (int i = 0; i < 2; i++) {
+            digitalWrite(LED_PIN, HIGH);
+            delay(200);
+            digitalWrite(LED_PIN, LOW);
+            delay(200);
+        }
+    }
+    else {
+        // Unknown gesture - single long flash
+        digitalWrite(LED_PIN, HIGH);
+        delay(1000);
+        digitalWrite(LED_PIN, LOW);
+    }
+}
+```
+
+This function is called after a gesture is recognized, enhancing the user experience by providing immediate visual feedback that corresponds to the magical effect of each spell.### LED Visual Feedback System
+
+To enhance the user experience and provide immediate visual feedback on gesture recognition, I implemented an LED-based feedback system:
+
+1. **Hardware Connection**: 
+   - LED connected to D9 (GPIO9) pin of the ESP32
+   - Current-limiting resistor to protect the LED
+
+2. **Gesture-Specific Patterns**:
+   - **Z Gesture (Fire Bolt)**: Three quick flashes (100ms on/off), simulating rapid fire
+   - **O Gesture (Reflect Shield)**: Two slow, steady pulses (500ms on, 300ms off), representing a stable shield
+   - **V Gesture (Healing Spell)**: One long flash (800ms) followed by two shorter flashes (200ms), mimicking a healing pulse
+
+3. **Implementation Details**:
+   - The LED turns on during data capture to indicate the system is recording
+   - After recognition, the LED displays the pattern corresponding to the detected spell
+   - In case of uncertain recognition, a single long flash is displayed
+
+This visual feedback system creates a more immersive and intuitive user experience, providing immediate confirmation of spell recognition without requiring the user to look at serial output or a display screen.# TECHIN515 Lab 4 - Magic Wand Report
 
 ## 1. Hardware Setup and Connections
 
@@ -12,7 +80,7 @@ The MPU6050 sensor is connected to the ESP32 as follows:
 - SCL → D5 (GPIO7) (I2C clock pin)
 - SDA → D4 (GPIO6) (I2C data pin)
 
-To ensure stable gesture recognition, I mounted the MPU6050 on a breadboard with a consistent orientation to maintain consistency between training data and actual use.
+The hardware setup includes an LED connected to D9 (GPIO9) to provide visual feedback for the recognized gestures. This LED serves as an interactive element that enhances the user experience by displaying different flash patterns for each spell.
 
 Additionally, I added a button connected to the ESP32's GPIO4 (D2) pin to trigger gesture recognition, replacing the original code's serial input 'o' command.
 
